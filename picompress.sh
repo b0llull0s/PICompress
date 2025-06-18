@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Parse arguments
 if [ $# -lt 3 ] || [ "$2" != "-o" ]; then
     echo "Usage: $0 <input.png> -o <output.png>"
@@ -32,7 +31,7 @@ echo "Original size: $(numfmt --to=iec-i --suffix=B $ORIGINAL_SIZE)"
 # Step 1: pngquant (creates temp file)
 TEMP_FILE=$(mktemp --suffix=.png)
 echo "Step 1: Running pngquant..."
-if ! pngquant --quality=65-80 "$INPUT" --output "$TEMP_FILE" 2>/dev/null; then
+if ! pngquant --quality=65-80 --output "$TEMP_FILE" "$INPUT" 2>/dev/null; then
     echo "Error: pngquant failed. Image might already be optimized or have issues."
     rm -f "$TEMP_FILE"
     exit 1
@@ -40,7 +39,7 @@ fi
 
 # Step 2: oxipng on the temp file
 echo "Step 2: Running oxipng..."
-if ! oxipng -o 2 --preserve "$TEMP_FILE" --out "$OUTPUT" 2>/dev/null; then
+if ! oxipng -o 2 --preserve --out "$OUTPUT" "$TEMP_FILE" 2>/dev/null; then
     echo "Error: oxipng failed."
     rm -f "$TEMP_FILE"
     exit 1
