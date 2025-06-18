@@ -1,2 +1,5 @@
 # PICompress
-PNG Compression Script - Combines pngquant + oxipng
+Usage:
+```
+./picompress.sh input.png -o output.png
+```
