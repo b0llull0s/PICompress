@@ -28,25 +28,28 @@ ORIGINAL_SIZE=$(stat -c%s "$INPUT")
 echo "Compressing '$INPUT'..."
 echo "Original size: $(numfmt --to=iec-i --suffix=B $ORIGINAL_SIZE)"
 
-# Step 1: pngquant (creates temp file)
-TEMP_FILE=$(mktemp --suffix=.png)
+# Step 1: pngquant (lossy compression)
 echo "Step 1: Running pngquant..."
-if ! pngquant --quality=65-80 --output "$TEMP_FILE" "$INPUT" 2>/dev/null; then
+if ! pngquant --quality=65-80 "$INPUT" 2>/dev/null; then
     echo "Error: pngquant failed. Image might already be optimized or have issues."
-    rm -f "$TEMP_FILE"
     exit 1
 fi
 
-# Step 2: oxipng on the temp file
+# pngquant creates a file with -fs8.png suffix by default
+PNGQUANT_OUTPUT="${INPUT%.*}-fs8.png"
+
+# Step 2: oxipng on the pngquant output
 echo "Step 2: Running oxipng..."
-if ! oxipng -o 2 --preserve --out "$OUTPUT" "$TEMP_FILE" 2>/dev/null; then
+if ! oxipng -o 2 --preserve "$PNGQUANT_OUTPUT" 2>/dev/null; then
     echo "Error: oxipng failed."
-    rm -f "$TEMP_FILE"
+    rm -f "$PNGQUANT_OUTPUT"
     exit 1
 fi
 
-# Clean up temp file
-rm -f "$TEMP_FILE"
+# Move the final result to desired output name
+mv "$PNGQUANT_OUTPUT" "$OUTPUT"
+
+# File cleanup is handled above
 
 # Calculate compression ratio
 FINAL_SIZE=$(stat -c%s "$OUTPUT")
